@@ -1,6 +1,6 @@
-module github.com/bigrocs/yilianyun
+module github.com/bigrocs/yxyiot
 
-go 1.13
+go 1.17
 
 require (
 	github.com/clbanning/mxj v1.8.4

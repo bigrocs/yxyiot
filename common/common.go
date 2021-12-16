@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bigrocs/yxyiot/config"
@@ -17,17 +18,20 @@ type Common struct {
 	Requests *requests.CommonRequest
 }
 type Api struct {
-	Name string
-	URL  string
+	Name   string
+	Method string
+	URL    string
 }
 
 var apiList = []Api{
 	{
-		Name: "play",
-		URL:  "/openApi/dev/controlDevice.json",
+		Name:   "play",
+		Method: "get",
+		URL:    "/v1/openApi/dev/controlDevice.json",
 	}, {
-		Name: "print",
-		URL:  "/print/index",
+		Name:   "print",
+		Method: "post",
+		URL:    "/v1/openApi/dev/customPrint.json",
 	},
 }
 
@@ -40,9 +44,9 @@ func (c *Common) Action(response *responses.CommonResponse) (err error) {
 func (c *Common) APIBaseURL() string { // TODO(): 后期做容灾功能
 	con := c.Config
 	if con.Sandbox { // 沙盒模式
-		return "https://ioe.car900.com/v1"
+		return "https://ioe.car900.com"
 	}
-	return "https://ioe.car900.com/v1"
+	return "https://ioe.car900.com"
 }
 
 // Request 执行请求
@@ -61,29 +65,38 @@ func (c *Common) Request(response *responses.CommonResponse) (err error) {
 	con := c.Config
 	req := c.Requests
 	apiUrl := ""
+	method := ""
 	for _, api := range apiList {
 		if api.Name == req.ApiName {
 			apiUrl = c.APIBaseURL() + api.URL
+			method = api.Method
 		}
 	}
 	// 构建配置参数
 	params := map[string]interface{}{
-		"timestamp": time.Now().Unix(),
+		"timestamp": time.Now().UnixNano() / 1e6,
 		"appId":     con.AppId,
 		"requestId": uuid.NewV4().String(),
 		"userCode":  con.AppId,
 	}
+	format := util.FormatParam(params, con.AppSecret)
+	token := strings.ToUpper(util.Md5([]byte(format))) // 开发签名
+	params["token"] = token
 	for k, v := range req.BizContent {
 		params[k] = v
 	}
-	param := util.FormatParam(params, con.AppSecret)
-	token := util.Md5([]byte(param)) // 开发签名
-	params["token"] = token
-	fmt.Println(param, token)
-	res, err := util.PostForm(apiUrl, param)
+	urlParam := util.FormatURLParam(params)
+	var res []byte
+	switch method {
+	case "get":
+		res, err = util.HTTPGet(apiUrl + "?" + urlParam)
+	case "post":
+		res, err = util.PostForm(apiUrl, urlParam)
+	}
 	if err != nil {
 		return err
 	}
+	fmt.Println(string(res))
 	response.SetHttpContent(res, "string")
 	return
 }

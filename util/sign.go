@@ -246,8 +246,13 @@ func FormatPrivateKey(privateKey string) (pKey string) {
 
 // FormatParam 格式化请求参数
 func FormatParam(params map[string]interface{}, appSecret string) (s string) {
-	for key, value := range params {
-		s = s + key + InterfaceToString(value)
+	var keys []string
+	for k := range params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		s = s + key + InterfaceToString(params[key])
 	}
 	return s + appSecret
 }
