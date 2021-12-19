@@ -78,6 +78,9 @@ func (c *Common) Request(response *responses.CommonResponse) (err error) {
 		"requestId": uuid.NewV4().String(),
 		"userCode":  con.AppId,
 	}
+	if v, ok := req.BizContent["requestId"]; ok {
+		params["requestId"] = v
+	}
 	format := util.FormatParam(params, con.AppSecret)
 	token := strings.ToUpper(util.Md5([]byte(format))) // 开发签名
 	params["token"] = token
