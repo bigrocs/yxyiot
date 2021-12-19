@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -96,7 +95,6 @@ func (c *Common) Request(response *responses.CommonResponse) (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(res))
 	response.SetHttpContent(res, "string")
 	return
 }
