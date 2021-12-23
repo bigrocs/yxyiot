@@ -18,11 +18,11 @@ func TestScan(t *testing.T) {
 	request := requests.NewCommonRequest()
 	request.ApiName = "play"
 	request.BizContent = map[string]interface{}{
-		"devName":       "bsj00575",
-		"bizType":       "2",
-		"content":       "张三收款成功3467.91元",
-		"money":         "24222.5",
-		"broadCastType": "1",
+		"devName": "bsj00575",
+		"bizType": "2",
+		"content": "张三收款成功3467.91元",
+		// "money":         "24222.5",
+		// "broadCastType": "1",
 	}
 	// 请求
 	response, err := client.ProcessCommonRequest(request)
